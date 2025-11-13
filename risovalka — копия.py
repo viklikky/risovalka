@@ -1,6 +1,11 @@
 import tkinter
 import tkinter.ttk
+import tkinter.filedialog
 import os
+import datetime
+
+from PIL import Image, ImageTk, ImageFilter, ImageGrab
+
 
 class App:
 
@@ -70,7 +75,9 @@ class App:
         self.cursor_x = event.x
         self.cursor_y = event.y 
        
-        
+
+
+       
 
     def create_canvas(self):
         self.canvas = tkinter.Canvas(
@@ -84,6 +91,85 @@ class App:
         self.canvas.bind('<B1-Motion>', self.make_art)
 
         self.canvas.place(x=100, y=10)
+
+
+    def add_image(self):
+        cwd = os.getcwd() + '\\sketch'
+        #print(cwd)
+        file_name = tkinter.filedialog.askopenfilename(
+            initialdir=cwd,
+            title="Выберите картинку",
+            filetype=[('All file', '*.*')]
+
+         )
+        #print(file_name)
+
+        if file_name:
+            self.canvas.delete('all')
+            self.image = Image.open(file_name)
+
+            # Сделать раскраской
+
+            self.image = self.image.convert('L')
+            self.image = self.image.filter(ImageFilter.CONTOUR)
+
+            width, height = self.image.size
+
+            scale = self.canvas.winfo_height() / height 
+
+            self.image = self.image.resize([int(width * scale), int(height * scale)])
+            
+##            print(self.canvas.winfo_width())
+##            print(self.canvas.winfo_height())
+##
+##            print(self.image.size)
+##            
+            self.image_tk = ImageTk.PhotoImage(self.image)
+
+            self.canvas.create_image(
+                400,
+                250,
+                image=self.image_tk
+
+            )
+
+
+    def create_button_load_image(self):
+        self.button_load_image_img = tkinter.PhotoImage(file='bin/addimage.png')
+        self.button_load_image = tkinter.Button(
+            master=self.window,
+            image=self.button_load_image_img,
+            bd=0,
+            command=self.add_image
+
+        )
+
+        self.button_load_image.place(x=450, y=524)
+        
+
+
+    def save_image(self):
+        save_file_name = f'{datetime.datetime.now().strftime("%d%m%Y_%H%M%S")}.jpg'
+
+        canvas_shot = ImageGrab.grab()
+
+        canvas_shot = canvas_shot.crop([300, 300, 1200, 900])
+        canvas_shot.save(save_file_name)
+        
+
+
+    def create_button_save_image(self):
+        self.button_save_image_img = tkinter.PhotoImage(file='bin/Sample image/icon.png')
+        self.button_save_image = tkinter.Button(
+            master=self.window,
+            image=self.button_save_image_img,
+            bd=0,
+            command=self.save_image
+
+        )
+
+        self.button_save_image.place(x=490, y=524)
+
 
 
     def change_current_width(self, event):
@@ -152,6 +238,8 @@ class App:
         self.create_width_slider()
         self.create_width_slider_text()
         self.create_new_color_boxes_button()
+        self.create_button_load_image()
+        self.create_button_save_image()
 
 
 
